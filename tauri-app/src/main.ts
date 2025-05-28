@@ -1,8 +1,43 @@
 import { invoke } from "@tauri-apps/api/core";
 
+// Theme switching functionality
+const themeSwitch = document.getElementById('theme-switch') as HTMLButtonElement;
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+function setTheme(isDark: boolean) {
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  themeSwitch.textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+// Initialize theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme) {
+  setTheme(savedTheme === 'dark');
+} else {
+  setTheme(prefersDark.matches);
+}
+
+themeSwitch.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  setTheme(!isDark);
+});
+
+// Listen for system theme changes
+prefersDark.addEventListener('change', (e) => {
+  if (!localStorage.getItem('theme')) {
+    setTheme(e.matches);
+  }
+});
+
 let greetInputEl: HTMLInputElement | null;
 let greetMsgEl: HTMLElement | null;
 let chosen: boolean = false;
+let shuffleNum: number = 0;
+let intervalId: number;
+let wins: number = 0;
+let losses: number = 0;
+let ties: number = 0;
 
 async function greet() {
   if (greetMsgEl && greetInputEl) {
@@ -13,19 +48,27 @@ async function greet() {
   }
 }
 
-let shuffleNum: number = 0;
-let intervalId: number;
-
 async function shufflePic(): Promise<void> {
   return new Promise((resolve) => {
-    let questionMark = document.getElementById("question-mark") as HTMLImageElement;
+    let computerOptions = document.getElementById("computer-options") as HTMLDivElement;
+    let icon = computerOptions.querySelector("i") as HTMLElement;
+    let words = computerOptions.querySelector("p") as HTMLElement;
     if (shuffleNum !== 6) {
       if (shuffleNum % 3 === 0) {
-        if (questionMark) questionMark.src = "/src/assets/rock.PNG";
+        if (icon && words) {
+          icon.className = "fa fa-hand-grab-o";
+          words.textContent = "ROCK";
+        }
       } else if (shuffleNum % 3 === 1) {
-        if (questionMark) questionMark.src = "/src/assets/paper.PNG";
+        if (icon && words) {
+          icon.className = "fa fa-hand-paper-o";
+          words.textContent = "PAPER";
+        }
       } else {
-        if (questionMark) questionMark.src = "/src/assets/scissors.PNG";
+        if (icon && words) {
+          icon.className = "fa fa-hand-scissors-o";
+          words.textContent = "SCISSORS";
+        }
       }
       shuffleNum++;
     } else {
@@ -38,27 +81,49 @@ async function shufflePic(): Promise<void> {
 async function computerChoice() {
   const choices = ["rock", "paper", "scissors"];
   let randomChoice = choices[Math.floor(Math.random() * 3)];
-  let questionMark = document.getElementById("question-mark") as HTMLImageElement;
+  let computerOptions = document.getElementById("computer-options") as HTMLDivElement;
+  computerOptions.classList.add("not-chosen");
+  let icon = computerOptions.querySelector("i") as HTMLElement;
+  let words = computerOptions.querySelector("p") as HTMLElement;
+  
   intervalId = setInterval(shufflePic, 400);
   await new Promise(resolve => setTimeout(resolve, 2400)); // Wait for 6 shuffles (6 * 400ms)
-  // Convert string choice to number
-  questionMark.classList.add('chosen');
+  
+  computerOptions.classList.remove("not-chosen");
+  computerOptions.classList.add('chosen');
+  
   switch (randomChoice) {
     case "rock":
-      if (questionMark) questionMark.src = "/src/assets/rock.png";
-      console.log(questionMark.src);
+      if (icon && words) {
+        icon.className = "fa fa-hand-grab-o";
+        words.textContent = "ROCK";
+      }
       return 0;
     case "paper": 
-      if (questionMark) questionMark.src = "/src/assets/paper.png";
-      console.log(questionMark.src);
+      if (icon && words) {
+        icon.className = "fa fa-hand-paper-o";
+        words.textContent = "PAPER";
+      }
       return 1;
     case "scissors": 
-      if (questionMark) questionMark.src = "/src/assets/scissors.png";
-      console.log(questionMark.src);
+      if (icon && words) {
+        icon.className = "fa fa-hand-scissors-o";
+        words.textContent = "SCISSORS";
+      }
       return 2;
     default: 
       return 3;
   }
+}
+
+function updateScore() {
+  let winText = document.getElementById("wins") as HTMLElement;
+  let lossText = document.getElementById("losses") as HTMLElement;
+  let tieText = document.getElementById("ties") as HTMLElement;
+
+  winText.textContent = `WINS: ${wins}`;
+  lossText.textContent = `LOSSES: ${losses}`;
+  tieText.textContent = `TIES: ${ties}`;
 }
 
 async function playGame(weapon: number) {
@@ -70,10 +135,16 @@ async function playGame(weapon: number) {
   });
   if (result === 0) {
     // Tie
+    ties++;
+    updateScore();
   } else if (result === 1) {
     // Win
+    wins++;
+    updateScore();
   } else {
     // Loss
+    losses++;
+    updateScore();
   }
 }
 
@@ -121,10 +192,19 @@ window.addEventListener("DOMContentLoaded", () => {
   
 
   let playAgain = document.getElementById("play-again");
+  let resetScore = document.getElementById("reset-score");
 
   playAgain?.addEventListener("click", () => {
     let previoslyChosen = document.querySelectorAll(".chosen");
     let nonPreviouslyChosen = document.querySelectorAll(".not-chosen");
+    let computerOptions = document.getElementById("computer-options") as HTMLDivElement;
+
+    let icon = computerOptions.querySelector("i") as HTMLElement;
+    let words = computerOptions.querySelector("p") as HTMLElement;
+
+    icon.className = "fa fa-question";
+    words.textContent = "";
+
     previoslyChosen.forEach(element => {
       element.classList.remove("chosen");
     });
@@ -133,5 +213,12 @@ window.addEventListener("DOMContentLoaded", () => {
     });
     chosen = false;
     shuffleNum = 0;
+  });
+
+  resetScore?.addEventListener("click", () => {
+    wins = 0;
+    losses = 0;
+    ties = 0;
+    updateScore();
   });
 });

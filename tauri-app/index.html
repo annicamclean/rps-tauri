@@ -6,11 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Rock Paper Scissors</title>
     <script type="module" src="/src/main.ts" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
 
   <body>
-    <main class="container">
+    <header>
       <h1>Rock Paper Scissors</h1>
+      <button class="theme-switch" id="theme-switch">🌙</button>
+    </header>
+    <main class="container">
       <div class="score">
         <h3>SCORE</h3>
         <div class="points">
@@ -20,22 +24,35 @@
         </div>
       </div>
       <div class="row">
-          <img src="/src/assets/rock.png" id="rock"/>
-          <img src="/src/assets/paper.png" id="paper"/>
-          <img src="/src/assets/scissors.png" id="scissors"/>
+        <div class="card" id="rock">
+          <i class="fa fa-hand-grab-o"></i>
+          <p>ROCK</p>
+        </div>
+        <div class="card" id="paper">
+          <i class="fa fa-hand-paper-o"></i>
+          <p>PAPER</p>
+        </div>
+        <div class="card" id="scissors">
+          <i class="fa fa-hand-scissors-o"></i>
+          <p>SCISSORS</p>
+        </div>
       </div>
       <h1>VS</h1>
       <div class="row">
-        <img src="/src/assets/question-mark.png"  id="question-mark"/>
+        <div class="card2" id="computer-options">
+          <i class="fa fa-question"></i>
+          <p></p>
+        </div>
       </div>
       <div class="row">
         <button id="play-again">Play Again</button>
+        <button id="reset-score">Reset Score</button>
       </div>
-      <form class="row" id="greet-form">
+      <!--<form class="row" id="greet-form">
         <input id="greet-input" placeholder="Enter a name..." />
         <button type="submit">Greet</button>
       </form>
-      <p id="greet-msg"></p>
+      <p id="greet-msg"></p>-->
     </main>
   </body>
 </html>
